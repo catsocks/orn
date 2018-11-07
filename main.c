@@ -10,6 +10,13 @@ int main()
     int window_width = (grid_width * grid_cell_size) + 1;
     int window_height = (grid_height * grid_cell_size) + 1;
 
+    SDL_Rect grid_cell = {
+        .x = 0,
+        .y = 0,
+        .w = grid_cell_size,
+        .h = grid_cell_size,
+    };
+
     // Place the grid cursor in the middle of the screen.
     SDL_Rect grid_cursor = {
         .x = (grid_width - 1) / 2 * grid_cell_size,
@@ -108,6 +115,25 @@ int main()
         SDL_SetRenderDrawColor(renderer, grid_background.r, grid_background.g,
                                grid_background.b, grid_background.a);
         SDL_RenderClear(renderer);
+
+        // Draw grid cells with varying shades of grey.
+        for (int x = 0; x < grid_width; x++) {
+            for (int y = 0; y < grid_height; y++) {
+                grid_cell.x = x * grid_cell_size;
+                grid_cell.y = y * grid_cell_size;
+
+                srand((unsigned) grid_cell.y);
+
+                unsigned char offset = rand() % 4;
+
+                SDL_SetRenderDrawColor(renderer, grid_background.r + offset,
+                                       grid_background.g + offset,
+                                       grid_background.b + offset,
+                                       grid_background.a);
+
+                SDL_RenderFillRect(renderer, &grid_cell);
+            }
+        }
 
         // Draw grid lines.
         SDL_SetRenderDrawColor(renderer, grid_line_color.r, grid_line_color.g,
