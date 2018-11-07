@@ -51,7 +51,8 @@ int main()
 
     SDL_Window *window;
     SDL_Renderer *renderer;
-    if (SDL_CreateWindowAndRenderer(window_width, window_height, 0, &window,
+    if (SDL_CreateWindowAndRenderer(window_width, window_height,
+                                    SDL_WINDOW_RESIZABLE, &window,
                                     &renderer) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "Create window and renderer: %s", SDL_GetError());
