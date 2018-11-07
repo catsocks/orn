@@ -86,6 +86,13 @@ int main()
                 case SDLK_RIGHT:
                     grid_cursor.x += grid_cell_size;
                     break;
+
+                case SDLK_RETURN:
+                    if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
+                        SDL_SetWindowFullscreen(window, 0);
+                    else
+                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+                    break;
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
@@ -104,6 +111,16 @@ int main()
                     mouse_hover = SDL_TRUE;
                 else if (event.window.event == SDL_WINDOWEVENT_LEAVE && mouse_hover)
                     mouse_hover = SDL_FALSE;
+
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    window_width = event.window.data1;
+                    window_height = event.window.data2;
+
+                    grid_width = window_width / grid_cell_size;
+                    grid_height = window_height / grid_cell_size;
+
+                    mouse_active = SDL_FALSE;
+                }
                 break;
             case SDL_QUIT:
                 quit = SDL_TRUE;
