@@ -34,6 +34,14 @@ int main()
         return EXIT_FAILURE;
     }
 
+    SDL_Cursor *cursor;
+    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+    if (cursor == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Get the system hand cursor: %s", SDL_GetError());
+    }
+    SDL_SetCursor(cursor);
+
     SDL_Window *window;
     SDL_Renderer *renderer;
     if (SDL_CreateWindowAndRenderer(window_width, window_height, 0, &window,
