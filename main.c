@@ -89,28 +89,36 @@ int main()
                     break;
 
                 case SDLK_RETURN:
-                    if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
+                    if (SDL_GetWindowFlags(window) &
+                            SDL_WINDOW_FULLSCREEN_DESKTOP)
                         SDL_SetWindowFullscreen(window, 0);
                     else
-                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        SDL_SetWindowFullscreen(window,
+                                                SDL_WINDOW_FULLSCREEN_DESKTOP);
                     break;
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                grid_cursor.x = (event.motion.x / grid_cell_size) * grid_cell_size;
-                grid_cursor.y = (event.motion.y / grid_cell_size) * grid_cell_size;
+                grid_cursor.x = (event.motion.x / grid_cell_size) *
+                        grid_cell_size;
+                grid_cursor.y = (event.motion.y / grid_cell_size) *
+                        grid_cell_size;
                 break;
             case SDL_MOUSEMOTION:
-                grid_cursor_ghost.x = (event.motion.x / grid_cell_size) * grid_cell_size;
-                grid_cursor_ghost.y = (event.motion.y / grid_cell_size) * grid_cell_size;
+                grid_cursor_ghost.x = (event.motion.x / grid_cell_size) *
+                        grid_cell_size;
+                grid_cursor_ghost.y = (event.motion.y / grid_cell_size) *
+                        grid_cell_size;
 
                 if (!mouse_active)
                     mouse_active = SDL_TRUE;
                 break;
             case SDL_WINDOWEVENT:
-                if (event.window.event == SDL_WINDOWEVENT_ENTER && !mouse_hover)
+                if (event.window.event == SDL_WINDOWEVENT_ENTER &&
+                        !mouse_hover)
                     mouse_hover = SDL_TRUE;
-                else if (event.window.event == SDL_WINDOWEVENT_LEAVE && mouse_hover)
+                else if (event.window.event == SDL_WINDOWEVENT_LEAVE &&
+                         mouse_hover)
                     mouse_hover = SDL_FALSE;
 
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
