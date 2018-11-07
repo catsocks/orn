@@ -50,7 +50,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    SDL_SetWindowTitle(window, "SDL Grid");
+    SDL_SetWindowTitle(window, "Orn");
 
     SDL_bool quit = SDL_FALSE;
     SDL_bool mouse_active = SDL_FALSE;
