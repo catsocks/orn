@@ -4,35 +4,27 @@
 
 int main()
 {
+    int grid_border_width = 1;
     int grid_cell_size = 36;
-    int grid_width = 29;
-    int grid_height = 23;
+    int grid_cell_outer_size = 36 + grid_border_width;
+    int grid_width = 27;
+    int grid_height = 21;
 
     // + 1 so that the last grid lines fit in the screen.
-    int window_width = (grid_width * grid_cell_size) + 1;
-    int window_height = (grid_height * grid_cell_size) + 1;
+    int window_width = (grid_width * grid_cell_outer_size) + 1;
+    int window_height = (grid_height * grid_cell_outer_size) + 1;
 
-    SDL_Rect grid_cell = {
-        .x = 0,
-        .y = 0,
-        .w = grid_cell_size,
-        .h = grid_cell_size,
-    };
+    SDL_Rect grid_cell = {0, 0, grid_cell_outer_size, grid_cell_outer_size};
 
     // Place the grid cursor in the middle of the screen.
     SDL_Rect grid_cursor = {
-        .x = (grid_width - 1) / 2 * grid_cell_size,
-        .y = (grid_height - 1) / 2 * grid_cell_size,
+        .x = ((grid_width - 1) / 2 * grid_cell_outer_size) + grid_border_width,
+        .y = ((grid_height - 1) / 2 * grid_cell_outer_size) + grid_border_width,
         .w = grid_cell_size,
         .h = grid_cell_size,
     };
 
-    SDL_Rect grid_cursor_sprite = {
-        .x = 0,
-        .y = 0,
-        .w = grid_cell_size,
-        .h = grid_cell_size,
-    };
+    SDL_Rect grid_cursor_sprite = {0, 0, grid_cell_size, grid_cell_size};
 
     // The cursor ghost is a cursor that always shows in the cell below the
     // mouse cursor.
@@ -128,16 +120,16 @@ int main()
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                grid_cursor.x = (event.motion.x / grid_cell_size) *
-                        grid_cell_size;
-                grid_cursor.y = (event.motion.y / grid_cell_size) *
-                        grid_cell_size;
+                grid_cursor.x = (event.motion.x / grid_cell_outer_size) *
+                        grid_cell_outer_size + 1;
+                grid_cursor.y = (event.motion.y / grid_cell_outer_size) *
+                        grid_cell_outer_size + 1;
                 break;
             case SDL_MOUSEMOTION:
-                grid_cursor_ghost.x = (event.motion.x / grid_cell_size) *
-                        grid_cell_size;
-                grid_cursor_ghost.y = (event.motion.y / grid_cell_size) *
-                        grid_cell_size;
+                grid_cursor_ghost.x = (event.motion.x / grid_cell_outer_size) *
+                        grid_cell_outer_size + 1;
+                grid_cursor_ghost.y = (event.motion.y / grid_cell_outer_size) *
+                        grid_cell_outer_size + 1;
 
                 if (!mouse_active)
                     mouse_active = SDL_TRUE;
@@ -190,17 +182,17 @@ int main()
             }
         }
 
-        // Draw grid lines.
+        // Draw grid cell borders.
         SDL_SetRenderDrawColor(renderer, grid_line_color.r, grid_line_color.g,
                                grid_line_color.b, grid_line_color.a);
 
         for (int x = 0; x < 1 + grid_width * grid_cell_size;
-             x += grid_cell_size) {
+             x += grid_cell_outer_size) {
             SDL_RenderDrawLine(renderer, x, 0, x, window_height);
         }
 
         for (int y = 0; y < 1 + grid_height * grid_cell_size;
-             y += grid_cell_size) {
+             y += grid_cell_outer_size) {
             SDL_RenderDrawLine(renderer, 0, y, window_width, y);
         }
 
