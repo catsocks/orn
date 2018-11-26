@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <SDL.h>
+#include <SDL_image.h>
 
 int main()
 {
@@ -26,6 +27,13 @@ int main()
         .h = grid_cell_size,
     };
 
+    SDL_Rect grid_cursor_sprite = {
+        .x = 0,
+        .y = 0,
+        .w = grid_cell_size,
+        .h = grid_cell_size,
+    };
+
     // The cursor ghost is a cursor that always shows in the cell below the
     // mouse cursor.
     SDL_Rect grid_cursor_ghost = {grid_cursor.x, grid_cursor.y, grid_cell_size,
@@ -34,11 +42,23 @@ int main()
     SDL_Color grid_background = {22, 22, 22, 255}; // Barely black
     SDL_Color grid_line_color = {44, 44, 44, 255}; // Dark grey
     SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
-    SDL_Color grid_cursor_color = {255, 255, 255, 255}; // White
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Initialize SDL: %s",
                      SDL_GetError());
+        return 1;
+    }
+
+    if (IMG_Init(IMG_INIT_PNG) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Initialize SDL_image: %s",
+                     IMG_GetError());
+        return 1;
+    }
+
+    SDL_Surface *sprites = IMG_Load("assets/spritesheet.png");
+    if (sprites == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open spritesheet: %s",
+                     IMG_GetError());
         return 1;
     }
 
@@ -61,6 +81,14 @@ int main()
     }
 
     SDL_SetWindowTitle(window, "Orn");
+
+    SDL_Texture *sprites_texture = SDL_CreateTextureFromSurface(renderer,
+                                                                sprites);
+    if (sprites_texture == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Create sprites texture: %s", SDL_GetError());
+        return 1;
+    }
 
     SDL_bool quit = SDL_FALSE;
     SDL_bool mouse_active = SDL_FALSE;
@@ -186,13 +214,14 @@ int main()
         }
 
         // Draw grid cursor.
-        SDL_SetRenderDrawColor(renderer, grid_cursor_color.r,
-                               grid_cursor_color.g, grid_cursor_color.b,
-                               grid_cursor_color.a);
-        SDL_RenderFillRect(renderer, &grid_cursor);
+        SDL_RenderCopy(renderer, sprites_texture, &grid_cursor_sprite,
+                       &grid_cursor);
 
         SDL_RenderPresent(renderer);
     }
+
+    SDL_FreeSurface(sprites);
+    SDL_DestroyTexture(sprites_texture);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
