@@ -53,7 +53,9 @@ int main()
     int window_height = (grid.height * grid.cell_outer_size) +
             grid.border_width;
 
-    SDL_Rect grid_cursor_ghost = cell_rect(&grid, 2, 2);
+    int grid_ghost_cursor_border_width = 3;
+
+    SDL_Rect grid_ghost_cursor = cell_rect(&grid, 2, 2);
 
     SDL_Rect cell_question_mark = cell_rect(&grid, 1.5, 5);
     SDL_Rect cell_orn_1 = cell_rect(&grid, 2, 2);
@@ -69,7 +71,8 @@ int main()
 
     SDL_Color grid_background = {22, 22, 22, 255}; // Barely black
     SDL_Color grid_line_color = {44, 44, 44, 255}; // Dark grey
-    SDL_Color grid_cursor_ghost_color = {44, 44, 44, 255};
+    SDL_Color grid_ghost_cursor_color = {44, 44, 44, 255};
+    SDL_Color grid_ghost_cursor_border_color = {100, 100, 100, 255}; // Grey
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Initialize SDL: %s",
@@ -162,9 +165,9 @@ int main()
                         grid.cell_outer_size + 1;
                 break;
             case SDL_MOUSEMOTION:
-                grid_cursor_ghost.x = (event.motion.x / grid.cell_outer_size) *
+                grid_ghost_cursor.x = (event.motion.x / grid.cell_outer_size) *
                         grid.cell_outer_size + 1;
-                grid_cursor_ghost.y = (event.motion.y / grid.cell_outer_size) *
+                grid_ghost_cursor.y = (event.motion.y / grid.cell_outer_size) *
                         grid.cell_outer_size + 1;
 
                 if (!mouse_active)
@@ -234,13 +237,13 @@ int main()
             SDL_RenderDrawLine(renderer, 0, y, window_width, y);
         }
 
-        // Draw grid ghost cursor.
+        // Draw ghost cursor.
         if (mouse_active && mouse_hover) {
-            SDL_SetRenderDrawColor(renderer, grid_cursor_ghost_color.r,
-                                   grid_cursor_ghost_color.g,
-                                   grid_cursor_ghost_color.b,
-                                   grid_cursor_ghost_color.a);
-            SDL_RenderFillRect(renderer, &grid_cursor_ghost);
+            SDL_SetRenderDrawColor(renderer, grid_ghost_cursor_color.r,
+                                   grid_ghost_cursor_color.g,
+                                   grid_ghost_cursor_color.b,
+                                   grid_ghost_cursor_color.a);
+            SDL_RenderFillRect(renderer, &grid_ghost_cursor);
         }
 
         // Draw first orn tile.
@@ -266,6 +269,43 @@ int main()
         // Update and draw the question mark tile.
         SDL_RenderCopy(renderer, sprites_texture, &sprite_question_mark,
                        &cell_question_mark);
+
+        // Draw ghost cursor border.
+        if (mouse_active && mouse_hover) {
+            SDL_SetRenderDrawColor(renderer, grid_ghost_cursor_border_color.r,
+                                   grid_ghost_cursor_border_color.g,
+                                   grid_ghost_cursor_border_color.b,
+                                   grid_ghost_cursor_border_color.a);
+
+            // Top border.
+            SDL_Rect grid_cursor_border = {
+                .x = grid_ghost_cursor.x - grid_ghost_cursor_border_width,
+                .y = grid_ghost_cursor.y - grid_ghost_cursor_border_width,
+                .w = grid_ghost_cursor.w + grid_ghost_cursor_border_width * 2,
+                .h = grid_ghost_cursor_border_width,
+            };
+
+            SDL_RenderFillRect(renderer, &grid_cursor_border);
+
+            // Bottom border.
+            grid_cursor_border.y = grid_ghost_cursor.y + grid_ghost_cursor.h;
+
+            SDL_RenderFillRect(renderer, &grid_cursor_border);
+
+            // Left border.
+            grid_cursor_border.x = grid_ghost_cursor.x -
+                    grid_ghost_cursor_border_width;
+            grid_cursor_border.y = grid_ghost_cursor.y;
+            grid_cursor_border.h = grid_ghost_cursor.h;
+            grid_cursor_border.w = grid_ghost_cursor_border_width;
+
+            SDL_RenderFillRect(renderer, &grid_cursor_border);
+
+            // Right border.
+            grid_cursor_border.x = grid_ghost_cursor.x + grid_ghost_cursor.w;
+
+            SDL_RenderFillRect(renderer, &grid_cursor_border);
+        }
 
         SDL_RenderPresent(renderer);
     }
