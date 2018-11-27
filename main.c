@@ -175,7 +175,16 @@ int main()
                     break;
                 }
                 break;
+            case SDL_MOUSEBUTTONDOWN:
+                grid_ghost_cursor_color.r += 70;
+                grid_ghost_cursor_color.g += 70;
+                grid_ghost_cursor_color.b += 70;
+                break;
             case SDL_MOUSEBUTTONUP:
+                grid_ghost_cursor_color.r -= 70;
+                grid_ghost_cursor_color.g -= 70;
+                grid_ghost_cursor_color.b -= 70;
+
                 if (event.motion.x > cell_orn_1.x + cell_orn_1.w)
                     orn_move_x = grid.cell_outer_size;
                 else if (event.motion.x < cell_orn_1.x)
