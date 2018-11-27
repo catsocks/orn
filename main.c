@@ -37,6 +37,18 @@ SDL_Rect sprite_rect(int tile_size, int x, int y)
     };
 }
 
+void cell_move(int *x, int *y, int dx, int dy, unsigned time)
+{
+    static unsigned timeout = 0;
+
+    if (timeout < time) {
+        *x += dx;
+        *y += dy;
+
+        timeout = time + 120;
+    }
+}
+
 int main()
 {
     struct grid grid = {
@@ -126,6 +138,11 @@ int main()
     SDL_bool mouse_hover = SDL_FALSE;
 
     while (!quit) {
+        unsigned ticks = SDL_GetTicks();
+
+        int orn_move_x = 0;
+        int orn_move_y = 0;
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -133,19 +150,19 @@ int main()
                 switch (event.key.keysym.sym) {
                 case SDLK_w:
                 case SDLK_UP:
-                    cell_orn_1.y -= grid.cell_size;
+                    orn_move_y = -grid.cell_outer_size;
                     break;
                 case SDLK_s:
                 case SDLK_DOWN:
-                    cell_orn_1.y += grid.cell_size;
+                    orn_move_y = grid.cell_outer_size;
                     break;
                 case SDLK_a:
                 case SDLK_LEFT:
-                    cell_orn_1.x -= grid.cell_size;
+                    orn_move_x = -grid.cell_outer_size;
                     break;
                 case SDLK_d:
                 case SDLK_RIGHT:
-                    cell_orn_1.x += grid.cell_size;
+                    orn_move_x = grid.cell_outer_size;
                     break;
 
                 case SDLK_RETURN:
@@ -159,10 +176,15 @@ int main()
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                cell_orn_1.x = (event.motion.x / grid.cell_outer_size) *
-                        grid.cell_outer_size + 1;
-                cell_orn_1.y = (event.motion.y / grid.cell_outer_size) *
-                        grid.cell_outer_size + 1;
+                if (event.motion.x > cell_orn_1.x + cell_orn_1.w)
+                    orn_move_x = grid.cell_outer_size;
+                else if (event.motion.x < cell_orn_1.x)
+                    orn_move_x = -grid.cell_outer_size;
+
+                if (event.motion.y > cell_orn_1.y + cell_orn_1.h)
+                    orn_move_y = grid.cell_outer_size;
+                else if (event.motion.y < cell_orn_1.y)
+                    orn_move_y = -grid.cell_outer_size;
                 break;
             case SDL_MOUSEMOTION:
                 grid_ghost_cursor.x = (event.motion.x / grid.cell_outer_size) *
@@ -196,6 +218,10 @@ int main()
                 break;
             }
         }
+
+        if (orn_move_x != 0 || orn_move_y != 0)
+            cell_move(&cell_orn_1.x, &cell_orn_1.y, orn_move_x, orn_move_y,
+                      ticks);
 
         // Draw grid background.
         SDL_SetRenderDrawColor(renderer, grid_background.r, grid_background.g,
@@ -251,7 +277,7 @@ int main()
                        &cell_orn_1);
 
         // Update and draw second orn tile.
-        if (cell_orn_2_sprite_timeout < SDL_GetTicks()) {
+        if (cell_orn_2_sprite_timeout < ticks) {
             if (cell_orn_2_sprite_timeout != 0) {
                 if (sprite_orn_2.x == grid.cell_size * 2)
                     sprite_orn_2.x = grid.cell_size * 3;
@@ -259,8 +285,7 @@ int main()
                     sprite_orn_2.x = grid.cell_size * 2;
             }
 
-            cell_orn_2_sprite_timeout += SDL_GetTicks() +
-                    (unsigned)randint(1000, 2000);
+            cell_orn_2_sprite_timeout += ticks + (unsigned)randint(1000, 2000);
         }
 
         SDL_RenderCopy(renderer, sprites_texture, &sprite_orn_2,
