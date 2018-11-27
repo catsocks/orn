@@ -1,3 +1,5 @@
-# SDL Grid
+# Orn
 
-A simple grid drawn using using [SDL](https://www.libsdl.org), with square transparent cells divided by dark grey lines over a dark background with a white cell cursor that is movable with either the mouse or keyboard input.
+A heavily WIP tile-based game using [SDL](https://www.libsdl.org).
+
+![Spritesheet](assets/spritesheet.png)
