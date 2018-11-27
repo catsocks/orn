@@ -2,34 +2,70 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+int randint(int min, int max)
+{
+   return min + rand() % (max + 1 - min);
+}
+
+struct grid {
+    int cell_size;
+    int cell_outer_size;
+    int border_width;
+    int width;
+    int height;
+};
+
+SDL_Rect cell_rect(struct grid *grid, float wd, float hd)
+{
+    return (SDL_Rect) {
+        .x = grid->border_width + (int)(grid->width / wd) *
+                grid->cell_outer_size,
+        .y = grid->border_width + (int)(grid->height / hd) *
+                grid->cell_outer_size,
+        .w = grid->cell_size,
+        .h = grid->cell_size
+    };
+}
+
+SDL_Rect sprite_rect(int tile_size, int x, int y)
+{
+    return (SDL_Rect) {
+        .x = tile_size * x,
+        .y = tile_size * y,
+        .w = tile_size,
+        .h = tile_size
+    };
+}
+
 int main()
 {
-    int grid_border_width = 1;
-    int grid_cell_size = 36;
-    int grid_cell_outer_size = 36 + grid_border_width;
-    int grid_width = 27;
-    int grid_height = 21;
-
-    // + 1 so that the last grid lines fit in the screen.
-    int window_width = (grid_width * grid_cell_outer_size) + 1;
-    int window_height = (grid_height * grid_cell_outer_size) + 1;
-
-    SDL_Rect grid_cell = {0, 0, grid_cell_outer_size, grid_cell_outer_size};
-
-    // Place the grid cursor in the middle of the screen.
-    SDL_Rect grid_cursor = {
-        .x = ((grid_width - 1) / 2 * grid_cell_outer_size) + grid_border_width,
-        .y = ((grid_height - 1) / 2 * grid_cell_outer_size) + grid_border_width,
-        .w = grid_cell_size,
-        .h = grid_cell_size,
+    struct grid grid = {
+        .cell_size = 36,
+        .border_width = 1,
+        .cell_outer_size = 0,
+        .width = 27,
+        .height = 21,
     };
 
-    SDL_Rect grid_cursor_sprite = {0, 0, grid_cell_size, grid_cell_size};
+    grid.cell_outer_size = grid.cell_size + grid.border_width;
 
-    // The cursor ghost is a cursor that always shows in the cell below the
-    // mouse cursor.
-    SDL_Rect grid_cursor_ghost = {grid_cursor.x, grid_cursor.y, grid_cell_size,
-                                  grid_cell_size};
+    int window_width = (grid.width * grid.cell_outer_size) + grid.border_width;
+    int window_height = (grid.height * grid.cell_outer_size) +
+            grid.border_width;
+
+    SDL_Rect grid_cursor_ghost = cell_rect(&grid, 2, 2);
+
+    SDL_Rect cell_question_mark = cell_rect(&grid, 1.5, 5);
+    SDL_Rect cell_orn_1 = cell_rect(&grid, 2, 2);
+    SDL_Rect cell_orn_2 = cell_rect(&grid, 4, 4);
+
+    int sprites_tile_size = 36;
+
+    SDL_Rect sprite_question_mark = sprite_rect(sprites_tile_size, 1, 0);
+    SDL_Rect sprite_orn_1 = sprite_rect(sprites_tile_size, 0, 0);
+    SDL_Rect sprite_orn_2 = sprite_rect(sprites_tile_size, 2, 0);
+
+    unsigned cell_orn_2_sprite_timeout = 0;
 
     SDL_Color grid_background = {22, 22, 22, 255}; // Barely black
     SDL_Color grid_line_color = {44, 44, 44, 255}; // Dark grey
@@ -94,19 +130,19 @@ int main()
                 switch (event.key.keysym.sym) {
                 case SDLK_w:
                 case SDLK_UP:
-                    grid_cursor.y -= grid_cell_size;
+                    cell_orn_1.y -= grid.cell_size;
                     break;
                 case SDLK_s:
                 case SDLK_DOWN:
-                    grid_cursor.y += grid_cell_size;
+                    cell_orn_1.y += grid.cell_size;
                     break;
                 case SDLK_a:
                 case SDLK_LEFT:
-                    grid_cursor.x -= grid_cell_size;
+                    cell_orn_1.x -= grid.cell_size;
                     break;
                 case SDLK_d:
                 case SDLK_RIGHT:
-                    grid_cursor.x += grid_cell_size;
+                    cell_orn_1.x += grid.cell_size;
                     break;
 
                 case SDLK_RETURN:
@@ -120,16 +156,16 @@ int main()
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                grid_cursor.x = (event.motion.x / grid_cell_outer_size) *
-                        grid_cell_outer_size + 1;
-                grid_cursor.y = (event.motion.y / grid_cell_outer_size) *
-                        grid_cell_outer_size + 1;
+                cell_orn_1.x = (event.motion.x / grid.cell_outer_size) *
+                        grid.cell_outer_size + 1;
+                cell_orn_1.y = (event.motion.y / grid.cell_outer_size) *
+                        grid.cell_outer_size + 1;
                 break;
             case SDL_MOUSEMOTION:
-                grid_cursor_ghost.x = (event.motion.x / grid_cell_outer_size) *
-                        grid_cell_outer_size + 1;
-                grid_cursor_ghost.y = (event.motion.y / grid_cell_outer_size) *
-                        grid_cell_outer_size + 1;
+                grid_cursor_ghost.x = (event.motion.x / grid.cell_outer_size) *
+                        grid.cell_outer_size + 1;
+                grid_cursor_ghost.y = (event.motion.y / grid.cell_outer_size) *
+                        grid.cell_outer_size + 1;
 
                 if (!mouse_active)
                     mouse_active = SDL_TRUE;
@@ -146,8 +182,8 @@ int main()
                     window_width = event.window.data1;
                     window_height = event.window.data2;
 
-                    grid_width = window_width / grid_cell_size;
-                    grid_height = window_height / grid_cell_size;
+                    grid.width = window_width / grid.cell_size;
+                    grid.height = window_height / grid.cell_size;
 
                     mouse_active = SDL_FALSE;
                 }
@@ -164,12 +200,14 @@ int main()
         SDL_RenderClear(renderer);
 
         // Draw grid cells with varying shades of grey.
-        for (int x = 0; x < grid_width; x++) {
-            for (int y = 0; y < grid_height; y++) {
-                grid_cell.x = x * grid_cell_size;
-                grid_cell.y = y * grid_cell_size;
+        SDL_Rect cell = {0, 0, grid.cell_size, grid.cell_size};
 
-                srand((unsigned) grid_cell.y);
+        for (int x = 0; x < grid.width; x++) {
+            for (int y = 0; y < grid.height; y++) {
+                cell.x = (x * grid.cell_outer_size) + grid.border_width;
+                cell.y = (y * grid.cell_outer_size) + grid.border_width;
+
+                srand((unsigned) cell.y);
 
                 unsigned char offset = rand() % 4;
 
@@ -178,7 +216,7 @@ int main()
                                        grid_background.b + offset,
                                        grid_background.a);
 
-                SDL_RenderFillRect(renderer, &grid_cell);
+                SDL_RenderFillRect(renderer, &cell);
             }
         }
 
@@ -186,13 +224,13 @@ int main()
         SDL_SetRenderDrawColor(renderer, grid_line_color.r, grid_line_color.g,
                                grid_line_color.b, grid_line_color.a);
 
-        for (int x = 0; x < 1 + grid_width * grid_cell_size;
-             x += grid_cell_outer_size) {
+        for (int x = 0; x < 1 + grid.width * grid.cell_size;
+             x += grid.cell_outer_size) {
             SDL_RenderDrawLine(renderer, x, 0, x, window_height);
         }
 
-        for (int y = 0; y < 1 + grid_height * grid_cell_size;
-             y += grid_cell_outer_size) {
+        for (int y = 0; y < 1 + grid.height * grid.cell_size;
+             y += grid.cell_outer_size) {
             SDL_RenderDrawLine(renderer, 0, y, window_width, y);
         }
 
@@ -205,9 +243,29 @@ int main()
             SDL_RenderFillRect(renderer, &grid_cursor_ghost);
         }
 
-        // Draw grid cursor.
-        SDL_RenderCopy(renderer, sprites_texture, &grid_cursor_sprite,
-                       &grid_cursor);
+        // Draw first orn tile.
+        SDL_RenderCopy(renderer, sprites_texture, &sprite_orn_1,
+                       &cell_orn_1);
+
+        // Update and draw second orn tile.
+        if (cell_orn_2_sprite_timeout < SDL_GetTicks()) {
+            if (cell_orn_2_sprite_timeout != 0) {
+                if (sprite_orn_2.x == grid.cell_size * 2)
+                    sprite_orn_2.x = grid.cell_size * 3;
+                else
+                    sprite_orn_2.x = grid.cell_size * 2;
+            }
+
+            cell_orn_2_sprite_timeout += SDL_GetTicks() +
+                    (unsigned)randint(1000, 2000);
+        }
+
+        SDL_RenderCopy(renderer, sprites_texture, &sprite_orn_2,
+                       &cell_orn_2);
+
+        // Update and draw the question mark tile.
+        SDL_RenderCopy(renderer, sprites_texture, &sprite_question_mark,
+                       &cell_question_mark);
 
         SDL_RenderPresent(renderer);
     }
