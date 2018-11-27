@@ -175,7 +175,7 @@ int main()
                     break;
                 }
                 break;
-            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
                 if (event.motion.x > cell_orn_1.x + cell_orn_1.w)
                     orn_move_x = grid.cell_outer_size;
                 else if (event.motion.x < cell_orn_1.x)
