@@ -10,4 +10,4 @@ A heavily WIP tile-based game using [SDL](https://www.libsdl.org).
 
 ## License
 
-Everything with the exception of the contents of the cmake folder is under the CC0 1.0 Universal license.
+Everything with the exception of the contents of the cmake folder is dedicated to the public domain under the CC0 1.0 Universal license.
